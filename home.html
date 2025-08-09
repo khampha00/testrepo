@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Gwadabawa Weather</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background: #e0f7fa;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 100vh;
+			margin: 0;
+		}
+		.weather-container {
+			background: #fff;
+			padding: 2rem 3rem;
+			border-radius: 12px;
+			box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+			text-align: center;
+		}
+		.date-time {
+			margin-bottom: 1rem;
+			font-size: 1.2rem;
+			color: #00796b;
+		}
+		.weather {
+			font-size: 1.5rem;
+			margin-bottom: 0.5rem;
+		}
+		.desc {
+			color: #555;
+		}
+	</style>
+</head>
+<body>
+	<div class="weather-container">
+		<h1 style="margin-top:0; color:#00796b; letter-spacing:2px;">GWADABAWA WEATHER</h1>
+		<div class="date-time" id="dateTime"></div>
+		<div class="weather" id="weather"></div>
+		<div class="desc" id="desc"></div>
+	</div>
+	<script>
+		// Update date and time
+		function updateDateTime() {
+			const now = new Date();
+			const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+			document.getElementById('dateTime').textContent = now.toLocaleString('en-US', options);
+		}
+		setInterval(updateDateTime, 1000);
+		updateDateTime();
+
+		// Fetch weather for Gwadabawa LG (approximate coordinates)
+		async function fetchWeather() {
+			// Gwadabawa, Sokoto, Nigeria coordinates (approx): 13.3586, 5.2314
+			const lat = 13.3586;
+			const lon = 5.2314;
+			// Using Open-Meteo free API (no key required)
+			const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+			try {
+				const res = await fetch(url);
+				const data = await res.json();
+				if (data.current_weather) {
+					const temp = data.current_weather.temperature;
+					const wind = data.current_weather.windspeed;
+					const weatherCode = data.current_weather.weathercode;
+					const desc = weatherDescription(weatherCode);
+					document.getElementById('weather').textContent = `Temperature: ${temp}°C, Wind: ${wind} km/h`;
+					document.getElementById('desc').textContent = desc;
+				} else {
+					document.getElementById('weather').textContent = 'Weather data unavailable.';
+				}
+			} catch (e) {
+				document.getElementById('weather').textContent = 'Failed to fetch weather.';
+			}
+		}
+
+		// Weather code to description (Open-Meteo)
+		function weatherDescription(code) {
+			const codes = {
+				0: 'Clear sky',
+				1: 'Mainly clear',
+				2: 'Partly cloudy',
+				3: 'Overcast',
+				45: 'Fog',
+				48: 'Depositing rime fog',
+				51: 'Light drizzle',
+				53: 'Moderate drizzle',
+				55: 'Dense drizzle',
+				56: 'Light freezing drizzle',
+				57: 'Dense freezing drizzle',
+				61: 'Slight rain',
+				63: 'Moderate rain',
+				65: 'Heavy rain',
+				66: 'Light freezing rain',
+				67: 'Heavy freezing rain',
+				71: 'Slight snow fall',
+				73: 'Moderate snow fall',
+				75: 'Heavy snow fall',
+				77: 'Snow grains',
+				80: 'Slight rain showers',
+				81: 'Moderate rain showers',
+				82: 'Violent rain showers',
+				85: 'Slight snow showers',
+				86: 'Heavy snow showers',
+				95: 'Thunderstorm',
+				96: 'Thunderstorm with slight hail',
+				99: 'Thunderstorm with heavy hail'
+			};
+			return codes[code] || 'Unknown weather';
+		}
+
+		fetchWeather();
+	</script>
+</body>
+</html>
